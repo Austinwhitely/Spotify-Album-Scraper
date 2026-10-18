@@ -1,1 +1,1 @@
-# Spotify-Album-Scrapper
+# Spotify-Album-Scraper
