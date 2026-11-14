@@ -1,17 +1,16 @@
-import pyautogui
-import easyocr
-import numpy as np
-from PIL import Image
-import pandas as pd
-
 import cv2
+import easyocr
+import pandas as pd
 from cv2.typing import MatLike
 
 replacements = {
     "_": " ",
     ";": ",",
     ":": ",",
+    "  ": " ",
+    ",": "",
 }
+
 
 def process_img(img: MatLike):
 
@@ -29,14 +28,13 @@ def process_img(img: MatLike):
     thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_OTSU)[1]
     cv2.imwrite("temp/index_thresh.png", thresh)
 
-    kernal = cv2.getStructuringElement(cv2.MORPH_RECT, (15, 3))
+    kernal = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 11))
     dialate = cv2.dilate(thresh, kernal, iterations=1)
     cv2.imwrite("temp/index_dilate.png", dialate)
 
     cnts = cv2.findContours(dialate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
 
-    
     boxes = []
     for c in cnts:
         x, y, w, h = cv2.boundingRect(c)
@@ -53,17 +51,17 @@ def process_img(img: MatLike):
         cell_crops.append(crop)
 
     cv2.imwrite("temp/index_bbox.png", img)
-   
+
     return cell_crops
 
 
-def img_reader(cell_crops:list[MatLike]):
+def img_reader(cell_crops: list[MatLike]):
     reader = easyocr.Reader(["en"], gpu=False)
-    
+
     all_text = []
     for cropped_img in cell_crops:
-        results = reader.readtext(cropped_img, mag_ratio=3, detail=0)
-        all_text.append(" ".join(results))
+        results = reader.readtext(cropped_img, mag_ratio=3, detail=0, paragraph=True)
+        all_text.append(" ".join(results))  # type: ignore
 
     rows = []
     for i in range(0, len(all_text), 2):
