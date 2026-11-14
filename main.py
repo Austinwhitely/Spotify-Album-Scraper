@@ -15,7 +15,10 @@ def main():
     results = IR.process_img(img)  # type: ignore
     print(IR.img_reader(results))
     """
-    AS.screenshot()
+
+    "AS.screenshot()"
+
+    AS.open_web()
 
 
 if __name__ == "__main__":

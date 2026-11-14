@@ -3,6 +3,7 @@ import easyocr
 import pandas as pd
 from cv2.typing import MatLike
 
+counter = 0
 replacements = {
     "_": " ",
     ";": ",",
@@ -12,7 +13,9 @@ replacements = {
 }
 
 
-def process_img(img: MatLike):
+def process_img(self, img: MatLike):
+
+    self.counter += 1
 
     if img is None:
         raise ValueError("Image failed to load in imgReader.py")
@@ -20,17 +23,10 @@ def process_img(img: MatLike):
     clean_img = img.copy()
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    cv2.imwrite("temp/index_gray.png", gray)
-
     blur = cv2.GaussianBlur(gray, (7, 7), 0)
-    cv2.imwrite("temp/index_blur.png", blur)
-
     thresh = cv2.threshold(blur, 0, 255, cv2.THRESH_OTSU)[1]
-    cv2.imwrite("temp/index_thresh.png", thresh)
-
     kernal = cv2.getStructuringElement(cv2.MORPH_RECT, (8, 11))
     dialate = cv2.dilate(thresh, kernal, iterations=1)
-    cv2.imwrite("temp/index_dilate.png", dialate)
 
     cnts = cv2.findContours(dialate, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     cnts = cnts[0] if len(cnts) == 2 else cnts[1]
@@ -50,7 +46,7 @@ def process_img(img: MatLike):
         crop = clean_img[y : y + h, x : x + w]
         cell_crops.append(crop)
 
-    cv2.imwrite("temp/index_bbox.png", img)
+    cv2.imwrite(f"temp/index_bbox{self.counter}.png", img)
 
     return cell_crops
 
