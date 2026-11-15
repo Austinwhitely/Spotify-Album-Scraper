@@ -19,6 +19,18 @@ class AutoScreenshotter:
         self.temp_dir = temp_dir
         self.counter = 0
         self.driver = None
+        self.scroll = """
+        const elements = document.querySelectorAll('*');
+        for (let el of elements) {
+            if (el.scrollHeight > el.clientHeight && el.clientHeight > 0) {
+                const style = window.getComputedStyle(el);
+                if (style.overflowY === 'scroll' || style.overflowY === 'auto') {
+                    el.scrollTop = 350;
+                    break;
+                }
+            }
+}
+"""
 
         os.makedirs(self.temp_dir, exist_ok=True)
 
@@ -39,22 +51,27 @@ class AutoScreenshotter:
 
         self.driver = uc.Chrome(options=options)
         self.driver.get(self.url)
-        self.driver.execute_script("document.body.style.zoom+'50%'")
+
+        time.sleep(4)
+        self.driver.execute_script("document.body.style.zoom='85%'")
+        self.driver.execute_script(self.scroll)
         input("enter")
-        return self.driver
 
     def autoScroll(self):
-        random_wait = random.randint(1, 10)
-        body = self.open_web(True)
-        is_end_visible = body.find_element(
+        random_wait = random.randint(1, 15)
+        assert self.driver is not None
+
+        is_end_visible = self.driver.find_element(
             By.CSS_SELECTOR, "bottom-links"
         ).is_displayed()
 
         while not is_end_visible:
-            self.driver.implicitly_wait(random_wait)
+            if self.driver is not None:
+                self.driver.implicitly_wait(random_wait)
+
             self.screenshot()
-            body.send_keys(Keys.PAGE_DOWN)
-            is_end_visible = body.find_element(
+            self.driver.send_keys(Keys.PAGE_DOWN)
+            is_end_visible = self.driver.find_element(
                 By.CSS_SELECTOR, "bottom-links"
             ).is_displayed()
             random_wait = random.randint(1, 10)
@@ -64,4 +81,3 @@ class AutoScreenshotter:
         self.counter += 1
         im = ImageGrab.grab(bbox=(147, 245, 1068, 970))
         im.save(f"temp/screenshot_{self.counter}.png")
-        im.show()
