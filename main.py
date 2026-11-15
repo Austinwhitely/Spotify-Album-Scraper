@@ -10,6 +10,7 @@ import imgReader as IR
 
 
 def main():
+    url = "https://open.spotify.com/playlist/54EvyvoDP1AZBgfgh5bVP1"
     """
     img = cv2.imread("temp/TestImg.png")
     results = IR.process_img(img)  # type: ignore
@@ -17,8 +18,8 @@ def main():
     """
 
     "AS.screenshot()"
-
-    AS.open_web()
+    AutoSS = AS.AutoScreenshotter(url=url)
+    AutoSS.open_web(True)
 
 
 if __name__ == "__main__":

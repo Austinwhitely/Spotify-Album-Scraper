@@ -12,54 +12,56 @@ from selenium.webdriver.common.keys import Keys
 import shutil
 
 
-os.makedirs("temp", exist_ok=True)
-url = "https://open.spotify.com/playlist/54EvyvoDP1AZBgfgh5bVP1"
+class AutoScreenshotter:
+    def __init__(self, url, profile_dir="chrome_profile", temp_dir="temp"):
+        self.url = url
+        self.profile_path = os.path.abspath(profile_dir)
+        self.temp_dir = temp_dir
+        self.counter = 0
+        self.driver = None
 
+        os.makedirs(self.temp_dir, exist_ok=True)
 
-def reset_profile():
-    shutil.rmtree("chrome_profile")
-    profile_path = os.path.abspath("chrome_profile")
-    options = uc.ChromeOptions()
-    options.add_argument(f"--user-data-dir={profile_path}")
+    def reset_profile(self):
 
-    driver = uc.Chrome(options=options)
-    driver.get(url)
+        if os.path.exists(self.profile_path):
+            shutil.rmtree(self.profile_path)
+        self.open_web(False)
+        input("Log in, then press any key to continue")
 
-    input("press enter")
-    return driver
+    def open_web(self, fullscreen: bool):
+        profile_path = os.path.abspath("chrome_profile")
 
+        options = uc.ChromeOptions()
+        options.add_argument(f"--user-data-dir={profile_path}")
+        if fullscreen:
+            options.add_argument("--start-fullscreen")
 
-def open_web():
-    profile_path = os.path.abspath("chrome_profile")
+        self.driver = uc.Chrome(options=options)
+        self.driver.get(self.url)
+        self.driver.execute_script("document.body.style.zoom+'50%'")
+        input("enter")
+        return self.driver
 
-    options = uc.ChromeOptions()
-    options.add_argument(f"--user-data-dir={profile_path}")
-    options.add_argument("--start-fullscreen")
-
-    driver = uc.Chrome(options=options)
-
-    driver.get(url)
-    driver.execute_script("document.body.style.zoom+'50%'")
-    input("enter")
-    return driver
-
-
-def autoScroll(webDriver):
-    random_wait = random.randint(1, 10)
-    body = open_web()
-    is_end_visible = body.find_element(By.CSS_SELECTOR, "bottom-links").is_displayed()
-
-    while not is_end_visible:
-        webDriver.implicitly_wait(random_wait)
-        screenshot()
-        body.send_keys(Keys.PAGE_DOWN)
+    def autoScroll(self):
+        random_wait = random.randint(1, 10)
+        body = self.open_web(True)
         is_end_visible = body.find_element(
             By.CSS_SELECTOR, "bottom-links"
         ).is_displayed()
-        random_wait = random.randint(1, 10)
-    time.sleep(10)
 
+        while not is_end_visible:
+            self.driver.implicitly_wait(random_wait)
+            self.screenshot()
+            body.send_keys(Keys.PAGE_DOWN)
+            is_end_visible = body.find_element(
+                By.CSS_SELECTOR, "bottom-links"
+            ).is_displayed()
+            random_wait = random.randint(1, 10)
+        time.sleep(10)
 
-def screenshot():
-    im = ImageGrab.grab(bbox=(147, 245, 1068, 970))
-    im.show()
+    def screenshot(self):
+        self.counter += 1
+        im = ImageGrab.grab(bbox=(147, 245, 1068, 970))
+        im.save(f"temp/screenshot_{self.counter}.png")
+        im.show()
