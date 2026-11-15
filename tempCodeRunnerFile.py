@@ -1,1 +1,1 @@
-easyocr
+reset_profile
