@@ -2,7 +2,10 @@ import os
 import random
 import time
 
+import json
 import undetected_chromedriver as uc
+from dotenv import load_dotenv
+import pickle
 from PIL import Image, ImageGrab
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -11,16 +14,21 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from webdriver_manager.chrome import ChromeDriverManager
 
+
 os.makedirs("temp", exist_ok=True)
+url = "https://open.spotify.com/playlist/54EvyvoDP1AZBgfgh5bVP1"
 
 
 def open_web():
-    service = Service(ChromeDriverManager().install())
-    driver = uc.Chrome(service=service)
-    driver.get("https://open.spotify.com/playlist/54EvyvoDP1AZBgfgh5bVP1")
-    body = driver.find_element(By.TAG_NAME, "body")
+    profile_path = os.path.abspath("chrome_profile")
 
-    return body
+    options = uc.ChromeOptions()
+    options.add_argument(f"--user-data-dir={profile_path}")
+
+    driver = uc.Chrome(options=options)
+    driver.get(url)
+    input("press enter")
+    return driver
 
 
 def autoScroll(webDriver):
