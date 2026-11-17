@@ -11,15 +11,18 @@ import imgReader as IR
 
 def main():
     url = "https://open.spotify.com/playlist/54EvyvoDP1AZBgfgh5bVP1"
-    """
-    img = cv2.imread("temp/TestImg.png")
-    results = IR.process_img(img)  # type: ignore
-    print(IR.img_reader(results))
-    """
+    initial_offset = 350
+    AutoSS = AS.AutoScreenshotter(initial_scroll_amount=initial_offset, url=url)
+    IMAGE_READER = IR.ImageReader()
+
+    img = cv2.imread(r"temp\screenshot_1.png")
+    IMAGE_READER.process_img(img)
+    print(IMAGE_READER.img_reader())
 
     "AS.screenshot()"
-    AutoSS = AS.AutoScreenshotter(url=url)
-    AutoSS.open_web(True)
+
+
+# AutoSS.open_web(True)
 
 
 if __name__ == "__main__":

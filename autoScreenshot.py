@@ -12,19 +12,27 @@ from selenium.webdriver.common.keys import Keys
 
 
 class AutoScreenshotter:
-    def __init__(self, url, profile_dir="chrome_profile", temp_dir="temp"):
+    def __init__(
+        self,
+        initial_scroll_amount: int,
+        url,
+        profile_dir="chrome_profile",
+        temp_dir="temp",
+    ):
         self.url = url
+        self.inital_scroll_amnt = initial_scroll_amount
         self.profile_path = os.path.abspath(profile_dir)
         self.temp_dir = temp_dir
         self.counter = 0
         self.driver = None
-        self.scroll = """
+        self.init_scroll_script = """
+        const scrollAmount = arguments[0];
         const elements = document.querySelectorAll('*');
         for (let el of elements) {
             if (el.scrollHeight > el.clientHeight && el.clientHeight > 0) {
                 const style = window.getComputedStyle(el);
                 if (style.overflowY === 'scroll' || style.overflowY === 'auto') {
-                    el.scrollTop = 350;
+                    el.scrollTop = scrollAmount;
                     break;
                 }
             }
@@ -53,8 +61,9 @@ class AutoScreenshotter:
 
         time.sleep(4)
         self.driver.execute_script("document.body.style.zoom='85%'")
-        self.driver.execute_script(self.scroll)
-        input("enter")
+        self.driver.execute_script(self.init_scroll_script, self.inital_scroll_amnt)
+        time.sleep(4)
+        self.screenshot()
 
     def autoScroll(self):
         random_wait = random.randint(1, 15)
@@ -78,5 +87,5 @@ class AutoScreenshotter:
 
     def screenshot(self):
         self.counter += 1
-        im = ImageGrab.grab(bbox=(147, 245, 1068, 970))
+        im = ImageGrab.grab(bbox=(147, 145, 1068, 970))
         im.save(f"temp/screenshot_{self.counter}.png")
