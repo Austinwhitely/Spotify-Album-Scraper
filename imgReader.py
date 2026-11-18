@@ -57,6 +57,7 @@ class ImageReader:
         boxes = sorted(boxes, key=lambda b: (b[1] // 15, b[0]))
 
         pad = 4
+        scale_factor = 3
         for x, y, w, h in boxes:
             x1 = max(0, x - pad)
             y1 = max(0, y - pad)
@@ -66,6 +67,13 @@ class ImageReader:
             cv2.rectangle(img, (x1, y1), (x2, y2), (36, 255, 12), 2)
             crop = clean_img[y1:y2, x1:x2]
             crop = cv2.bitwise_not(crop)
+            crop = cv2.resize(
+                crop,
+                None,
+                fx=scale_factor,
+                fy=scale_factor,
+                interpolation=cv2.INTER_LANCZOS4,
+            )
             self.cell_crops.append(crop)
 
         cv2.imwrite(f"temp/index_bbox{self.counter}.png", img)
